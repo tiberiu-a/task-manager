@@ -31,6 +31,9 @@ class TaskRepository
 
     public function create(array $data): int
     {
+
+        $data['description'] = $data['description'] ?? null;
+
         $stmt = $this->pdo->prepare(
             "INSERT INTO tasks (title, description, creator_id) VALUES (:title, :description, :creator_id)"
         );

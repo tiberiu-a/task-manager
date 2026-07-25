@@ -22,9 +22,11 @@ class TaskController
         try {
             $id = $this->taskService->createTask($data);
             http_response_code(201);
+            header('Content-Type: application/json');
             echo json_encode(['id' => $id]);
         } catch (InvalidArgumentException $e) {
             http_response_code(400);
+            header('Content-Type: application/json');
             echo json_encode(['error' => $e->getMessage()]);
         }
     }
