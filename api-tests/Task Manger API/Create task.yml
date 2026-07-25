@@ -1,0 +1,22 @@
+info:
+  name: Create task
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: http://localhost:8000/tasks
+  body:
+    type: json
+    data: |-
+      {
+        "title": "Primul task",
+        "creator_id": 5
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
