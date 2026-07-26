@@ -10,7 +10,8 @@ http:
     type: json
     data: |-
       {
-        "title": "Primul task",
+        "title": "Taskul va fi sters",
+        "description": "Acest task este creat pentru a fi sters, singurul lui scop este de a fi sters.",
         "creator_id": 5
       }
   auth: inherit
