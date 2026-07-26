@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+use App\Exception\TaskNotFoundException;
 use App\Repository\TaskRepository;
 use DateTime;
 use InvalidArgumentException;
@@ -24,6 +25,35 @@ class TaskService
         $this->assertValidDateRange($data);
 
         return $this->taskRepository->create($data);
+    }
+
+    public function listTasks():array
+    {
+        return $this->taskRepository->findAll();
+    }
+
+    public function getTask(int $id): ?array
+    {
+        return $this->taskRepository->findById($id);
+    }
+
+    public function updateTask(int $id, array $data): bool
+    {
+
+        if ($this->taskRepository->findById($id) === null) {
+            throw new TaskNotFoundException("The task with id $id does not exist");
+        }
+
+        $this->assertHasTitle($data);
+        
+        $this->assertValidDateRange($data);
+
+        return $this->taskRepository->update($id, $data);
+    }
+
+    public function deleteTask(int $id): bool
+    {
+        return $this->taskRepository->delete($id);
     }
 
     private function assertHasTitle(array $data): void 
