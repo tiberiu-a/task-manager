@@ -6,14 +6,18 @@ const tasks = ref([])
 const api = "http://localhost:8000"
 const loading = ref(true)
 const error = ref(null)
+const title = ref("")
+const description = ref("")
+
+const temp_creator_id = 5
 
 onMounted(async () => {
-    loadTasks(api + "/tasks")
+    await loadTasks()
 })
 
-async function loadTasks(url) {
+async function loadTasks() {
     try {
-        const response = await fetch(url)
+        const response = await fetch(api + "/tasks")
         if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.status}`)
         }
@@ -24,6 +28,30 @@ async function loadTasks(url) {
     } finally {
         loading.value = false
     }
+}
+
+async function createTask() {
+    try {
+        const response = await fetch(api + "/tasks", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+                title: title.value,
+                description: description.value,
+                creator_id: temp_creator_id
+            })
+        })
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`)
+        }
+        title.value = ""
+        description.value = ""
+        loadTasks(api + "/tasks")
+    } catch (e) {
+        error.value = "An error occurred while creating a task!"
+        console.error('Error creating task: ', e)
+    }
+
 }
 </script>
 
@@ -39,6 +67,13 @@ async function loadTasks(url) {
             :key="task.id"
             :task="task"
         />    
-    </template>   
-    
+    </template>
+    <br/>
+    <form @submit.prevent="createTask">
+        <input :value="title" @input="title = $event.target.value" />
+        <br/>
+        <input :value="description" @input="description = $event.target.value" />
+        <br/>
+        <button type="submit">Submit</button>
+    </form>    
 </template>
