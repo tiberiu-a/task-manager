@@ -6,6 +6,8 @@ use App\Controller\TaskController;
 use App\Repository\TaskRepository;
 use App\Service\TaskService;
 
+header('Access-Control-Allow-Origin: http://localhost:5173');
+
 $db = new Database();
 $pdo = $db->getConnection();
 $matches = array();
