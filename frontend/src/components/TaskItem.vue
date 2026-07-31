@@ -5,6 +5,8 @@ defineProps({
     task: { type: Object, required: true}
 })
 
+const emit = defineEmits(['delete'])
+
 const expanded = ref(false)
 </script>
 
@@ -12,6 +14,8 @@ const expanded = ref(false)
     <div>
         <h2>{{ task.title }}</h2>
         <p v-if="expanded">{{ task.description }}</p>
-        <button @click="expanded=!expanded">Expand</button>
+        <button @click="expanded=!expanded" style="margin-right: 10px;">Expand</button>
+        <button @click="emit('delete', task.id)">Delete</button>
+
     </div>
 </template>
