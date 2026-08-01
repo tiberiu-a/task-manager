@@ -59,14 +59,14 @@ class TaskService
     private function assertHasTitle(array $data): void 
     {
         if (empty($data['title'])) {
-            throw new InvalidArgumentException("createTask: you can't have a task with an empty title");
+            throw new InvalidArgumentException("You can't have a task with an empty title");
         }
     }
 
     private function assertHasCreatorId(array $data): void
     {
         if (empty($data['creator_id'])) {
-            throw new InvalidArgumentException("createTask: you can't have a task without a creator_id");
+            throw new InvalidArgumentException("You can't have a task without a creator_id");
         }
     }
 
@@ -76,7 +76,7 @@ class TaskService
             $start_date = new DateTime($data['start_date']);
             $due_date = new DateTime($data['due_date']);
             if ($start_date >= $due_date) {
-                throw new InvalidArgumentException("createTask: start_date can't be bigger of equal to due_date");
+                throw new InvalidArgumentException("Start date can't be bigger or equal to due date");
             }
         }
     }
