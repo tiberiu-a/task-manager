@@ -5,6 +5,7 @@ import TaskItem from '@/components/TaskItem.vue'
 const tasks = ref([])
 const api = "http://localhost:8000"
 const loading = ref(true)
+const pending = ref(false)
 const loadError = ref(null)
 const actionError = ref(null)
 const title = ref("")
@@ -19,7 +20,7 @@ onMounted(async () => {
 async function loadTasks() {
     try {
         loadError.value = null
-        loading.value = true
+        loading.value = tasks.value.length === 0
         const response = await fetch(api + "/tasks")
         if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.status}`)
@@ -36,6 +37,7 @@ async function loadTasks() {
 async function createTask() {
     try {
         actionError.value = null
+        pending.value = true
         const response = await fetch(api + "/tasks", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -54,6 +56,8 @@ async function createTask() {
     } catch (e) {
         actionError.value = "An error occurred while creating a task!"
         console.error('Error creating task: ', e)
+    } finally {
+        pending.value = false
     }
 
 }
@@ -61,18 +65,45 @@ async function createTask() {
 async function deleteTask(id) {
     try {
         actionError.value = null
+        pending.value = true
         const response = await fetch(api + '/tasks/' + id, {
             method: "DELETE"
         })
         if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.status}`)
-        }        
+        }
         tasks.value = tasks.value.filter(task => task.id !== id)
     } catch (e) {
         actionError.value = "An error occurred while deleting a task!"
         console.error('Error deleting task: ', e)
+    } finally {
+        pending.value = false
     }
-    
+
+}
+
+async function updateTask(data) {
+    try {
+        actionError.value = null
+        pending.value = true
+        const response = await fetch(api + '/tasks/' + data.id, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                title: data.title,
+                description: data.description
+            })
+        })
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`)
+        }
+        tasks.value = tasks.value.map(t => t.id === data.id ? { ...t, title: data.title, description: data.description } : t)
+    } catch (e) {
+        actionError.value = "An error occurred while updating a task!"
+        console.error('Error updating task: ', e)
+    } finally {
+        pending.value = false
+    }
 }
 </script>
 
@@ -81,19 +112,21 @@ async function deleteTask(id) {
     <br />
     <p v-if="actionError" style="color: red;">{{ actionError }}</p>
     <br />
+    <p v-if="pending">Pending...</p>
+    <br />
     <p v-if="loading">Is Loading...</p>
     <p v-else-if="loadError" style="color: red;">{{ loadError }}
         <button @click="loadTasks">Retry</button>
     </p>
     <p v-else-if="tasks.length === 0">No task to display!</p>
     <template v-else>
-        <TaskItem v-for="task in tasks" :key="task.id" :task="task" @delete="deleteTask" />
+        <TaskItem v-for="task in tasks" :key="task.id" :task="task" @delete="deleteTask" @update="updateTask" />
     </template>
     <br />
     <form @submit.prevent="createTask">
-        <input :value="title" @input="title = $event.target.value" />
+        <input v-model.trim="title" />
         <br />
-        <input :value="description" @input="description = $event.target.value" />
+        <textarea v-model="description"></textarea>
         <br />
         <button type="submit">Submit</button>
     </form>
