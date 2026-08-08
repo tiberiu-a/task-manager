@@ -31,13 +31,14 @@ class TaskRepository
 
     public function create(array $data): int
     {
-
-        $data['description'] = $data['description'] ?? null;
-
         $stmt = $this->pdo->prepare(
             "INSERT INTO tasks (title, description, creator_id) VALUES (:title, :description, :creator_id)"
         );
-        $stmt->execute($data);
+        $stmt->execute([
+            'title' => $data['title'],
+            'description' => $data['description'] ?? null,
+            'creator_id' => $data['creator_id']
+        ]);
         return (int) $this->pdo->lastInsertId();
     }
 
@@ -46,7 +47,11 @@ class TaskRepository
         $stmt = $this->pdo->prepare(
             "UPDATE tasks SET title = :title, description = :description WHERE id = :id"
         );
-        $stmt->execute(array_merge($data, ['id' => $id]));
+        $stmt->execute([
+            'title' => $data['title'],
+            'description' => $data['description'] ?? null,
+            'id' => $id
+        ]);
         return $stmt->rowCount() > 0;
     }
 
