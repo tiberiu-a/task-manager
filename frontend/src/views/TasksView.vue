@@ -108,26 +108,61 @@ async function updateTask(data) {
 </script>
 
 <template>
-    <h1>My tasks</h1>
-    <br />
-    <p v-if="actionError" style="color: red;">{{ actionError }}</p>
-    <br />
-    <p v-if="pending">Pending...</p>
-    <br />
-    <p v-if="loading">Is Loading...</p>
-    <p v-else-if="loadError" style="color: red;">{{ loadError }}
-        <button @click="loadTasks">Retry</button>
-    </p>
-    <p v-else-if="tasks.length === 0">No task to display!</p>
-    <template v-else>
-        <TaskItem v-for="task in tasks" :key="task.id" :task="task" @delete="deleteTask" @update="updateTask" />
-    </template>
-    <br />
-    <form @submit.prevent="createTask">
-        <input v-model.trim="title" />
-        <br />
-        <textarea v-model="description"></textarea>
-        <br />
-        <button type="submit">Submit</button>
-    </form>
+    <div class="root-tasks">
+        <h1>My tasks</h1>
+        <p v-if="actionError" class="error">{{ actionError }}</p>
+        <p v-if="pending" class="state">Pending...</p>
+        <p v-if="loading" class="state">Is Loading...</p>
+        <p v-else-if="loadError" class="error">{{ loadError }}
+            <button @click="loadTasks" class="secondary">Retry</button>
+        </p>
+        <p v-else-if="tasks.length === 0" class="state">No task to display!</p>
+        <div v-else class="task-list">
+            <TaskItem v-for="task in tasks" :key="task.id" :task="task" @delete="deleteTask" @update="updateTask" />
+        </div>
+        <form @submit.prevent="createTask" class="card task-form">
+            <label>
+                Title
+                <input v-model.trim="title" />
+            </label>
+            <label>
+                Description
+                <textarea v-model="description"></textarea>
+            </label>
+            <button type="submit" class="primary">Submit</button>
+        </form>
+    </div>
 </template>
+
+<style scoped>
+.root-tasks {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    max-width: 720px;
+    margin: 0 auto;
+}
+
+.task-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.task-form {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.state {
+    color: var(--text-muted)
+}
+
+.error {
+    color: var(--danger);
+    background-color: var(--danger-bg);
+    padding: 8px 12px;
+    border-radius: 4px;
+}
+</style>
