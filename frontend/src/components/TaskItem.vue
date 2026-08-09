@@ -35,19 +35,65 @@ function saveEdit() {
 </script>
 
 <template>
-    <form v-if="editing" @submit.prevent="saveEdit">
-        <input v-model.trim="draftTitle" @keyup.esc="cancelEdit" />
-        <br />
-        <textarea v-model="draftDescription" @keyup.esc="cancelEdit"></textarea>
-        <br />
-        <button type="submit" style="margin-right: 50px;">Save</button>
-        <button type="button" @click="cancelEdit">Cancel</button>
-    </form>
-    <div v-else>
-        <h2>{{ task.title }}</h2>
-        <p v-if="expanded">{{ task.description }}</p>
-        <button @click="expanded = !expanded" style="margin-right: 10px;">Expand</button>
-        <button @click="emit('delete', task.id)" style="margin-right: 10px;">Delete</button>
-        <button @click="startEdit">Edit</button>
+    <div class="card">
+        <form v-if="editing" @submit.prevent="saveEdit" class="task-edit">
+            <label>
+                Title
+                <input v-model.trim="draftTitle" @keyup.esc="cancelEdit" />
+            </label>
+            <label>
+                Description
+                <textarea v-model="draftDescription" @keyup.esc="cancelEdit"></textarea>
+            </label>
+            <div class="actions">
+                <button type="submit" class="primary">Save</button>
+                <button type="button" @click="cancelEdit" class="secondary">Cancel</button>
+            </div>
+        </form>
+        <div v-else class="task">
+            <div class="task-text">
+                <h2 class="title">{{ task.title }}</h2>
+                <p v-if="expanded" class="description">{{ task.description }}</p>
+            </div>
+            <div class="actions">
+                <button @click="expanded = !expanded" class="secondary">Expand</button>
+                <button @click="startEdit" class="secondary">Edit</button>
+                <button @click="emit('delete', task.id)" class="danger">Delete</button>
+            </div>
+        </div>
     </div>
 </template>
+
+<style scoped>
+.actions {
+    display: flex;
+    gap: 8px;
+}
+
+.task {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.task-text {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.title {
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.description {
+    color: var(--text-muted);
+}
+
+.task-edit {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+</style>
