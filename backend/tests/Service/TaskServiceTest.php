@@ -4,6 +4,7 @@ namespace Tests\Service;
 
 use App\Repository\TaskRepository;
 use App\Service\TaskService;
+use App\Exception\TaskNotFoundException;
 use InvalidArgumentException;
 use Override;
 use PHPUnit\Framework\TestCase;
@@ -57,5 +58,64 @@ class TaskServiceTest extends TestCase
         ]);
 
         $this->assertSame(42, $result);
+    }
+
+    public function testUpdateTaskThrowsWhenTaskDoesNotExist(): void
+    {
+        $this->repository->method('findById')->willReturn(null);
+
+        $this->expectException(TaskNotFoundException::class);
+
+        $this->service->updateTask(100, []);
+    }
+
+    public function testUpdateTaskRejectsEmptyTitle(): void
+    {
+        $this->repository->method('findById')->willReturn(['id' => 5]);
+
+        $this->expectException(InvalidArgumentException::class);
+
+        $this->service->updateTask(5, []);
+    }
+
+    public function testUpdateTaskRejectsDueDateBeforeStartDate(): void
+    {
+        $this->repository->method('findById')->willReturn(['id' => 5]);
+
+        $this->expectException(InvalidArgumentException::class);
+
+        $this->service->updateTask(5, [
+            'title' => 'test',
+            'start_date' => '2026-08-10',
+            'due_date' => '2026-08-09'
+        ]);
+    }
+
+    public function testUpdateTaskReturnsTheRepositoryResult(): void
+    {
+        $this->repository->method('findById')->willReturn(['id' => 5]);
+
+        $this->repository->method('update')->willReturn(true);
+
+        $result = $this->service->updateTask(5, [
+            'title' => 'test',
+        ]);
+
+        $this->assertTrue($result);
+    }
+
+    public function testUpdateTaskDoesNotWriteWhenTaskDoesNotExist(): void
+    {
+        $repository = $this->createMock(TaskRepository::class);
+
+        $repository->method('findById')->willReturn(null);
+
+        $service = new TaskService($repository);
+
+        $repository->expects($this->never())->method('update');
+
+        $this->expectException(TaskNotFoundException::class);
+
+        $service->updateTask(100, ['title' => 'test']);
     }
 }
