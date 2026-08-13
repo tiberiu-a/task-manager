@@ -1,9 +1,9 @@
 <script setup>
 import { ref, onMounted } from 'vue'
+import { request } from '@/services/api'
 import TaskItem from '@/components/TaskItem.vue'
 
 const tasks = ref([])
-const api = "http://localhost:8000"
 const loading = ref(true)
 const pending = ref(false)
 const loadError = ref(null)
@@ -20,12 +20,8 @@ onMounted(async () => {
 async function loadTasks() {
     try {
         loadError.value = null
-        loading.value = tasks.value.length === 0
-        const response = await fetch(api + "/tasks")
-        if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`)
-        }
-        tasks.value = await response.json()
+        loading.value = tasks.value.length === 0        
+        tasks.value = await request("/tasks")
     } catch (e) {
         loadError.value = "An error occurred while retrieving the tasks!"
         console.error('Error fetching tasks: ', e)
@@ -37,19 +33,15 @@ async function loadTasks() {
 async function createTask() {
     try {
         actionError.value = null
-        pending.value = true
-        const response = await fetch(api + "/tasks", {
+        pending.value = true        
+        await request("/tasks", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
+            body: {
                 title: title.value,
                 description: description.value,
                 creator_id: temp_creator_id
-            })
+            }
         })
-        if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`)
-        }
         title.value = ""
         description.value = ""
         loadTasks()
@@ -66,12 +58,9 @@ async function deleteTask(id) {
     try {
         actionError.value = null
         pending.value = true
-        const response = await fetch(api + '/tasks/' + id, {
+        await request('/tasks/' + id, {
             method: "DELETE"
-        })
-        if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`)
-        }
+        })        
         tasks.value = tasks.value.filter(task => task.id !== id)
     } catch (e) {
         actionError.value = "An error occurred while deleting a task!"
@@ -86,17 +75,13 @@ async function updateTask(data) {
     try {
         actionError.value = null
         pending.value = true
-        const response = await fetch(api + '/tasks/' + data.id, {
+        await request('/tasks/' + data.id, {
             method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
+            body: {
                 title: data.title,
                 description: data.description
-            })
-        })
-        if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`)
-        }
+            }
+        })        
         tasks.value = tasks.value.map(t => t.id === data.id ? { ...t, title: data.title, description: data.description } : t)
     } catch (e) {
         actionError.value = "An error occurred while updating a task!"
