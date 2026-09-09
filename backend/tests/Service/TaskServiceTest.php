@@ -48,6 +48,52 @@ class TaskServiceTest extends TestCase
         ]);
     }
 
+    public function testCreateTaskRejectsMalformedStartDate(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        $this->service->createTask([
+            'title' => 'Test',
+            'creator_id' => 5,
+            'start_date' => 'hello',
+        ]);
+    }
+
+    public function testCreateTaskRejectsMalformedDueDate(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        $this->service->createTask([
+            'title' => 'Test',
+            'creator_id' => 5,
+            'due_date' => 'hello',
+        ]);
+    }
+
+    public function testCreateTaskRejectNonexistentStartDate(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage("The day or month is out of range");
+
+        $this->service->createTask([
+            'title' => 'Test',
+            'creator_id' => 5,
+            'start_date' => '2026-08-45'
+        ]);
+    }
+
+    public function testCreateTaskRejectNonexistentDueDate(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage("The day or month is out of range");
+
+        $this->service->createTask([
+            'title' => 'Test',
+            'creator_id' => 5,
+            'due_date' => '2026-08-45'
+        ]);
+    }
+
     public function testCreateTaskReturnsTheNewId(): void
     {
         $this->repository->method('create')->willReturn(42);
