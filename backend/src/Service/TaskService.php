@@ -20,14 +20,18 @@ class TaskService
     {
         $this->assertHasTitle($data);
 
-        $this->assertHasCreatorId($data);        
+        $this->assertHasCreatorId($data);
 
-        $this->assertValidDateRange($data);
+        $start_date = $this->validateDate($data['start_date'] ?? null);
+
+        $due_date = $this->validateDate($data['due_date'] ?? null);
+
+        $this->assertValidDateRange($start_date, $due_date);
 
         return $this->taskRepository->create($data);
     }
 
-    public function listTasks():array
+    public function listTasks(): array
     {
         return $this->taskRepository->findAll();
     }
@@ -44,9 +48,13 @@ class TaskService
             throw new TaskNotFoundException("The task with id $id does not exist");
         }
 
+        $start_date = $this->validateDate($data['start_date'] ?? null);
+
+        $due_date = $this->validateDate($data['due_date'] ?? null);
+
+        $this->assertValidDateRange($start_date, $due_date);
+
         $this->assertHasTitle($data);
-        
-        $this->assertValidDateRange($data);
 
         return $this->taskRepository->update($id, $data);
     }
@@ -56,7 +64,7 @@ class TaskService
         return $this->taskRepository->delete($id);
     }
 
-    private function assertHasTitle(array $data): void 
+    private function assertHasTitle(array $data): void
     {
         if (empty($data['title'])) {
             throw new InvalidArgumentException("You can't have a task with an empty title");
@@ -70,14 +78,28 @@ class TaskService
         }
     }
 
-    private function assertValidDateRange(array $data): void
+    private function validateDate(?string $date): ?DateTime
     {
-        if (!empty($data['due_date']) && !empty($data['start_date'])) {
-            $start_date = new DateTime($data['start_date']);
-            $due_date = new DateTime($data['due_date']);
-            if ($start_date >= $due_date) {
-                throw new InvalidArgumentException("Start date can't be bigger or equal to due date");
-            }
+        if (!$date) {
+            return null;
+        }
+        $obj_date = DateTime::createFromFormat('Y-m-d', $date);
+
+        if (!$obj_date) {
+            throw new InvalidArgumentException("The date needs to have this format Y-m-d (ex. 2000-01-30)");
+        }
+
+        if ($obj_date->format('Y-m-d') !== $date) {
+            throw new InvalidArgumentException("The day or month is out of range");
+        }
+
+        return $obj_date;
+    }
+
+    private function assertValidDateRange(?DateTime $start_date, ?DateTime $due_date): void
+    {
+        if ($start_date !== null && $due_date !== null && $start_date >= $due_date) {
+            throw new InvalidArgumentException("Start date can't be bigger or equal to due date");
         }
     }
 }
