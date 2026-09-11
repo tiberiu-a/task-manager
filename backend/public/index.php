@@ -3,9 +3,11 @@ require __DIR__ . '/../vendor/autoload.php';
 
 use App\Database;
 use App\Controller\TaskController;
+use App\Controller\UserController;
 use App\Repository\TaskRepository;
+use App\Repository\UserRepository;
 use App\Service\TaskService;
-
+use App\Service\UserService;
 
 header('Access-Control-Allow-Origin: http://localhost:5173');
 header('Access-Control-Allow-Methods: POST, GET, PUT, DELETE, OPTIONS');
@@ -27,6 +29,10 @@ $matches = array();
 $taskRepository = new TaskRepository($pdo);
 $taskService = new TaskService($taskRepository);
 $taskController = new TaskController($taskService);
+
+$userRepository = new UserRepository($pdo);
+$userService = new UserService($userRepository);
+$userController = new UserController($userService);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_SERVER['REQUEST_URI'] === '/tasks') {
 
@@ -50,6 +56,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_SERVER['REQUEST_URI'] === '/tasks
 
     $id = (int) $matches[1];
     $taskController->delete($id);
+
+} elseif ($_SERVER['REQUEST_METHOD'] === 'POST' && $_SERVER['REQUEST_URI'] === '/register') {
+
+    $userController->create();
 
 } else {
 
