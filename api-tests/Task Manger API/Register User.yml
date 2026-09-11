@@ -1,0 +1,25 @@
+info:
+  name: Register User
+  type: http
+  seq: 6
+
+http:
+  method: POST
+  url: http://localhost:8000/register
+  body:
+    type: json
+    data: |-
+      {
+        "name": "test",
+        "email": "test5@t.com",
+        "password": "test1234564",
+        "birthday": "salut"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: true
