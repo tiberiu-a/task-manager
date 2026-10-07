@@ -35,4 +35,14 @@ class UserRepository
         }
         return (int) $this->pdo->lastInsertId();
     }
+
+    public function findByEmail(string $email): ?array
+    {
+        $stmt = $this->pdo->prepare(
+            "SELECT * FROM users WHERE email = :email"
+        );
+        $stmt->execute(['email' => $email]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row === false ? null : $row;
+    }
 }

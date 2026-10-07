@@ -1,16 +1,15 @@
 info:
-  name: Register User
+  name: Login User
   type: http
-  seq: 6
+  seq: 7
 
 http:
   method: POST
-  url: http://localhost:8000/register
+  url: http://localhost:8000/login
   body:
     type: json
     data: |-
       {
-        "name": "test",
         "email": "test10@t.com",
         "password": "test1234564"
       }
@@ -21,4 +20,4 @@ settings:
   timeout: 0
   followRedirects: true
   maxRedirects: 5
-  forwardAuthorizationHeader: true
+  forwardAuthorizationHeader: false
