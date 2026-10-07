@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+use App\Exception\InvalidCredentialsException;
 use App\Repository\UserRepository;
 use InvalidArgumentException;
 use DateTime;
@@ -36,17 +37,52 @@ class UserService
         return $this->userRepository->create($data);
     }
 
+    public function loginUser(array $data): int
+    {
+        $this->assertHasEmail($data);
+
+        $this->assertValidEmail($data);
+        
+        $this->assertHasPassword($data);
+
+        $user = $this->verifyUserEmail($data);
+
+        $this->verifyUserPassword($data['password'], $user['password']);
+
+        return $user['id'];
+    }
+
+    private function verifyUserEmail(array $data): array 
+    {
+        $user = $this->userRepository->findByEmail($data['email']);
+
+        if ($user === null) {
+            throw new InvalidCredentialsException("Invalid email address or incorrect password");
+        }
+
+        return $user;
+    }
+
+    private function verifyUserPassword(string $plain_password, string $hashed_password): void
+    {
+        $isUserPassValid = password_verify($plain_password, $hashed_password);
+
+        if ($isUserPassValid === false) {
+            throw new InvalidCredentialsException("Invalid email address or incorrect password");
+        }
+    }
+
     private function assertHasName(array $data): void
     {
         if (empty($data['name'])) {
-            throw new InvalidArgumentException("You can't create an account without a name");
+            throw new InvalidArgumentException("The name field is required");
         }
     }
 
     private function assertHasEmail(array $data): void
     {
         if (empty($data['email'])) {
-            throw new InvalidArgumentException("You can't create an account without an email");
+            throw new InvalidArgumentException("The email field is required");
         }
     }
 
@@ -60,7 +96,7 @@ class UserService
     private function assertHasPassword(array $data): void
     {
         if (empty($data['password'])) {
-            throw new InvalidArgumentException("You can't create an account without a password");
+            throw new InvalidArgumentException("The password field is required");
         }
     }
 

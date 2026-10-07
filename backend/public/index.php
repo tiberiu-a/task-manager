@@ -61,6 +61,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_SERVER['REQUEST_URI'] === '/tasks
 
     $userController->create();
 
+} elseif ($_SERVER['REQUEST_METHOD'] === 'POST' && $_SERVER['REQUEST_URI'] === '/login') {
+
+    $userController->login();
+
 } else {
 
     http_response_code(404);

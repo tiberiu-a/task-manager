@@ -2,6 +2,7 @@
 
 namespace Tests\Service;
 
+use App\Exception\InvalidCredentialsException;
 use App\Repository\UserRepository;
 use App\Service\UserService;
 use InvalidArgumentException;
@@ -47,7 +48,7 @@ class UserServiceTest extends TestCase
     public function testCreateUserRejectsEmptyName(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage("You can't create an account without a name");
+        $this->expectExceptionMessage("The name field is required");
 
         $this->service->createUser(
             [
@@ -60,7 +61,7 @@ class UserServiceTest extends TestCase
     public function testCreateUserRejectsEmptyEmail(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage("You can't create an account without an email");
+        $this->expectExceptionMessage("The email field is required");
 
         $this->service->createUser(
             [
@@ -87,7 +88,7 @@ class UserServiceTest extends TestCase
     public function testCreateUserRejectsEmptyPassword(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage("You can't create an account without a password");
+        $this->expectExceptionMessage("The password field is required");
 
         $this->service->createUser(
             [
@@ -154,5 +155,106 @@ class UserServiceTest extends TestCase
                 'birthday' => 'hello'
             ]
         );
+    }
+
+    public function testLoginUserRejectsEmptyEmail(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage("The email field is required");
+
+        $this->service->loginUser(
+            [
+                'password' => 'Testul123',
+            ]
+        );
+    }
+
+    public function testLoginUserRejectEmptyPassword(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage("The password field is required");
+
+        $this->service->loginUser(
+            [
+                'email' => 'test@test.com',
+            ]
+        );
+    }
+
+    public function testLoginUserRejectInvalidEmail(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage("Invalid email format");
+
+        $this->service->loginUser(
+            [
+                'email' => 'test email',
+                'password' => '123456789',
+            ]
+        );
+    }
+
+    public function testLoginUserRejectUnregisteredUser(): void
+    {
+        $repository = $this->createStub(UserRepository::class);
+        $repository->method('findByEmail')->willReturn(null);
+
+        $service = new UserService($repository);
+
+        $this->expectException(InvalidCredentialsException::class);
+        $this->expectExceptionMessage("Invalid email address or incorrect password");
+        $service->loginUser(
+            [
+                'email' => 'nobody@test.com',
+                'password' => '123456789',
+            ]
+        );
+    }
+
+    public function testLoginUserRejectWrongPassword(): void
+    {
+        $hash_pass = password_hash('correctPassword', PASSWORD_DEFAULT);
+        $repository = $this->createStub(UserRepository::class);
+        $repository->method('findByEmail')->willReturn(
+            [
+                'email' => 'validEmail@test.com',
+                'password' => $hash_pass,
+            ]
+        );
+
+        $service = new UserService($repository);
+
+        $this->expectException(InvalidCredentialsException::class);
+        $this->expectExceptionMessage("Invalid email address or incorrect password");
+        $service->loginUser(
+            [
+                'email' => 'validEmail@test.com',
+                'password' => 'wrongPassword',
+            ]
+        );
+    }
+
+    public function testLoginUserAcceptsCorrectCredentials(): void
+    {
+        $hash_pass = password_hash('correctPassword', PASSWORD_DEFAULT);
+        $repository = $this->createStub(UserRepository::class);
+        $repository->method('findByEmail')->willReturn(
+            [
+                'id' => 10,
+                'email' => 'validEmail@test.com',
+                'password' => $hash_pass,
+            ]
+        );
+
+        $service = new UserService($repository);
+
+        $user_id = $service->loginUser(
+            [                
+                'email' => 'validEmail@test.com',
+                'password' => 'correctPassword',
+            ]
+        );
+
+        $this->assertSame(10,$user_id);
     }
 }
