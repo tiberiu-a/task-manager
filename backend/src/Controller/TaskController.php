@@ -21,7 +21,8 @@ class TaskController
         $data = json_decode($json, true);
 
         try {
-            $id = $this->taskService->createTask($data);
+            $user_id = $_SESSION['user_id'];
+            $id = $this->taskService->createTask($user_id, $data);
             http_response_code(201);
             header('Content-Type: application/json');
             echo json_encode(['id' => $id]);

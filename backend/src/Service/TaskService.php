@@ -16,11 +16,9 @@ class TaskService
         $this->taskRepository = $taskRepository;
     }
 
-    public function createTask(array $data): int
+    public function createTask(int $user_id, array $data): int
     {
         $this->assertHasTitle($data);
-
-        $this->assertHasCreatorId($data);
 
         $start_date = $this->validateDate($data['start_date'] ?? null);
 
@@ -28,7 +26,7 @@ class TaskService
 
         $this->assertValidDateRange($start_date, $due_date);
 
-        return $this->taskRepository->create($data);
+        return $this->taskRepository->create($user_id, $data);
     }
 
     public function listTasks(): array
@@ -69,14 +67,7 @@ class TaskService
         if (empty($data['title'])) {
             throw new InvalidArgumentException("You can't have a task with an empty title");
         }
-    }
-
-    private function assertHasCreatorId(array $data): void
-    {
-        if (empty($data['creator_id'])) {
-            throw new InvalidArgumentException("You can't have a task without a creator_id");
-        }
-    }
+    }    
 
     private function validateDate(?string $date): ?DateTime
     {

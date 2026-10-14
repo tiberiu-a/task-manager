@@ -10,9 +10,9 @@ http:
     type: json
     data: |-
       {
-        "title": "Taskul va fi sters",
+        "title": "Verifica ca nu se foloseste creator_id din json",
         "description": "Acest task este creat pentru a fi sters, singurul lui scop este de a fi sters.",
-        "creator_id": 5
+        "creator_id": 99
       }
   auth: inherit
 
@@ -21,3 +21,4 @@ settings:
   timeout: 0
   followRedirects: true
   maxRedirects: 5
+  forwardAuthorizationHeader: true

@@ -34,6 +34,26 @@ $userRepository = new UserRepository($pdo);
 $userService = new UserService($userRepository);
 $userController = new UserController($userService);
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_SERVER['REQUEST_URI'] === '/register') {
+
+    $userController->create();
+    exit();
+
+} elseif ($_SERVER['REQUEST_METHOD'] === 'POST' && $_SERVER['REQUEST_URI'] === '/login') {
+
+    $userController->login();
+    exit();
+}
+
+session_start();
+
+if (array_key_exists('user_id', $_SESSION) === false) {
+    http_response_code(401);
+    header('Content-Type: application/json');
+    echo json_encode(['error' => 'You are not logged in']);
+    exit();
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_SERVER['REQUEST_URI'] === '/tasks') {
 
     $taskController->create();
@@ -56,14 +76,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_SERVER['REQUEST_URI'] === '/tasks
 
     $id = (int) $matches[1];
     $taskController->delete($id);
-
-} elseif ($_SERVER['REQUEST_METHOD'] === 'POST' && $_SERVER['REQUEST_URI'] === '/register') {
-
-    $userController->create();
-
-} elseif ($_SERVER['REQUEST_METHOD'] === 'POST' && $_SERVER['REQUEST_URI'] === '/login') {
-
-    $userController->login();
 
 } else {
 

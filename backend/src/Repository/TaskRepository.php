@@ -29,7 +29,7 @@ class TaskRepository
         return $row === false ? null : $row;
     }
 
-    public function create(array $data): int
+    public function create(int $user_id, array $data): int
     {
         $stmt = $this->pdo->prepare(
             "INSERT INTO tasks (title, description, creator_id) VALUES (:title, :description, :creator_id)"
@@ -37,7 +37,7 @@ class TaskRepository
         $stmt->execute([
             'title' => $data['title'],
             'description' => $data['description'] ?? null,
-            'creator_id' => $data['creator_id']
+            'creator_id' => $user_id
         ]);
         return (int) $this->pdo->lastInsertId();
     }
