@@ -26,23 +26,15 @@ class TaskServiceTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
 
-        $this->service->createTask(['creator_id' => 5]);
-    }
-
-    public function testCreateTaskRejectsMissingCreatorId(): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-
-        $this->service->createTask(['title' => 'Test']);
+        $this->service->createTask(5, []);
     }
 
     public function testCreateTaskRejectsDueDateBeforeStartDate(): void
     {
         $this->expectException(InvalidArgumentException::class);
 
-        $this->service->createTask([
+        $this->service->createTask(5, [
             'title' => 'Test',
-            'creator_id' => 5,
             'start_date' => '2026-08-10',
             'due_date' => '2026-08-09'
         ]);
@@ -52,9 +44,8 @@ class TaskServiceTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
 
-        $this->service->createTask([
+        $this->service->createTask(5, [
             'title' => 'Test',
-            'creator_id' => 5,
             'start_date' => 'hello',
         ]);
     }
@@ -63,9 +54,8 @@ class TaskServiceTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
 
-        $this->service->createTask([
+        $this->service->createTask(5, [
             'title' => 'Test',
-            'creator_id' => 5,
             'due_date' => 'hello',
         ]);
     }
@@ -75,9 +65,8 @@ class TaskServiceTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage("The day or month is out of range");
 
-        $this->service->createTask([
+        $this->service->createTask(5, [
             'title' => 'Test',
-            'creator_id' => 5,
             'start_date' => '2026-08-45'
         ]);
     }
@@ -87,9 +76,8 @@ class TaskServiceTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage("The day or month is out of range");
 
-        $this->service->createTask([
+        $this->service->createTask(5, [
             'title' => 'Test',
-            'creator_id' => 5,
             'due_date' => '2026-08-45'
         ]);
     }
@@ -98,12 +86,28 @@ class TaskServiceTest extends TestCase
     {
         $this->repository->method('create')->willReturn(42);
 
-        $result = $this->service->createTask([
+        $result = $this->service->createTask(5, [
             'title' => 'Test',
-            'creator_id' => 5,
         ]);
 
         $this->assertSame(42, $result);
+    }
+
+    public function testCreateTaskPassesTheLoggedInUserAsCreator(): void
+    {
+        $repository = $this->createMock(TaskRepository::class);
+        $service = new TaskService($repository);
+
+        $data = [
+            'title' => 'Test',
+            'creator_id' => 99
+        ];
+
+        $repository->expects($this->once())
+            ->method('create')
+            ->with(7);
+
+        $service->createTask(7, $data);
     }
 
     public function testUpdateTaskThrowsWhenTaskDoesNotExist(): void
