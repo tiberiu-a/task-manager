@@ -13,18 +13,18 @@ class TaskRepository
         $this->pdo = $pdo;
     }
 
-    public function findAll(): array
+    public function findAll(int $user_id): array
     {
-        $stmt = $this->pdo->prepare("SELECT * FROM tasks");
-        $stmt->execute();
+        $stmt = $this->pdo->prepare("SELECT * FROM tasks WHERE creator_id = :user_id");
+        $stmt->execute(['user_id' => $user_id]);
         $row = $stmt->fetchAll(PDO::FETCH_ASSOC);
         return $row;
     }
 
-    public function findById(int $id): ?array
+    public function findById(int $id, int $user_id): ?array
     {
-        $stmt = $this->pdo->prepare("SELECT * FROM tasks WHERE id = :id");
-        $stmt->execute(['id' => $id]);
+        $stmt = $this->pdo->prepare("SELECT * FROM tasks WHERE id = :id AND creator_id = :user_id");
+        $stmt->execute(['id' => $id, 'user_id' => $user_id]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         return $row === false ? null : $row;
     }
@@ -42,25 +42,29 @@ class TaskRepository
         return (int) $this->pdo->lastInsertId();
     }
 
-    public function update(int $id, array $data): bool
+    public function update(int $task_id, int $user_id, array $data): bool
     {
         $stmt = $this->pdo->prepare(
-            "UPDATE tasks SET title = :title, description = :description WHERE id = :id"
+            "UPDATE tasks SET title = :title, description = :description WHERE id = :task_id AND creator_id = :user_id"
         );
         $stmt->execute([
             'title' => $data['title'],
             'description' => $data['description'] ?? null,
-            'id' => $id
+            'task_id' => $task_id,
+            'user_id' => $user_id
         ]);
         return $stmt->rowCount() > 0;
     }
 
-    public function delete(int $id): bool 
+    public function delete(int $task_id, int $user_id): bool 
     {
         $stmt = $this->pdo->prepare(
-            "DELETE FROM tasks WHERE id = :id"
+            "DELETE FROM tasks WHERE id = :id AND creator_id = :user_id"
         );
-        $stmt->execute(['id' => $id]);
+        $stmt->execute([
+                'id' => $task_id,
+                'user_id' => $user_id
+            ]);
         return $stmt->rowCount() > 0;
     }
 }

@@ -110,13 +110,75 @@ class TaskServiceTest extends TestCase
         $service->createTask(7, $data);
     }
 
-    public function testUpdateTaskThrowsWhenTaskDoesNotExist(): void
+    public function testGetTaskReturnsTheTaskFoundForTheUser(): void
+    {
+        $repository = $this->createMock(TaskRepository::class);
+        $service = new TaskService($repository);
+
+        $data = [
+            'id' => 5,
+            'title' => 'Test',
+            'start_date' => '2026-08-09',
+            'due_date' => '2026-08-10'
+        ];
+
+        $repository->method('findById')->willReturn($data);
+
+        $repository->expects($this->once())
+            ->method('findById')
+            ->with(5, 7);
+
+        $returned_data = $service->getTask(5, 7);
+
+        $this->assertSame($data, $returned_data);
+    }
+
+    public function testGetTaskThrowsWhenNoTaskIsFoundForTheUser(): void
     {
         $this->repository->method('findById')->willReturn(null);
 
         $this->expectException(TaskNotFoundException::class);
 
-        $this->service->updateTask(100, []);
+        $this->service->getTask(5, 7);
+    }
+
+    public function testUpdateTaskUpdatesTheTaskFoundForTheUser(): void
+    {
+        $repository = $this->createMock(TaskRepository::class);
+        $service = new TaskService($repository);
+
+        $data = [
+            'id' => 5,
+            'title' => 'Test',
+            'start_date' => '2026-08-09',
+            'due_date' => '2026-08-10'
+        ];
+
+        $repository->expects($this->once())
+            ->method('findById')
+            ->willReturn($data)
+            ->with(5, 7);
+
+
+        $new_data = [
+            'id' => 5,
+            'title' => 'New Test',
+        ];
+
+        $repository->expects($this->once())
+            ->method('update')
+            ->with(5, 7, $new_data);
+
+        $service->updateTask(5, 7, $new_data);
+    }
+
+    public function testUpdateTaskThrowsWhenTheTaskIsNotOwnedByTheUser(): void
+    {
+        $this->repository->method('findById')->willReturn(null);
+
+        $this->expectException(TaskNotFoundException::class);
+
+        $this->service->updateTask(5, 999, []);
     }
 
     public function testUpdateTaskRejectsEmptyTitle(): void
@@ -125,7 +187,7 @@ class TaskServiceTest extends TestCase
 
         $this->expectException(InvalidArgumentException::class);
 
-        $this->service->updateTask(5, []);
+        $this->service->updateTask(5, 5, []);
     }
 
     public function testUpdateTaskRejectsDueDateBeforeStartDate(): void
@@ -134,24 +196,11 @@ class TaskServiceTest extends TestCase
 
         $this->expectException(InvalidArgumentException::class);
 
-        $this->service->updateTask(5, [
+        $this->service->updateTask(5, 5, [
             'title' => 'test',
             'start_date' => '2026-08-10',
             'due_date' => '2026-08-09'
         ]);
-    }
-
-    public function testUpdateTaskReturnsTheRepositoryResult(): void
-    {
-        $this->repository->method('findById')->willReturn(['id' => 5]);
-
-        $this->repository->method('update')->willReturn(true);
-
-        $result = $this->service->updateTask(5, [
-            'title' => 'test',
-        ]);
-
-        $this->assertTrue($result);
     }
 
     public function testUpdateTaskDoesNotWriteWhenTaskDoesNotExist(): void
@@ -166,6 +215,65 @@ class TaskServiceTest extends TestCase
 
         $this->expectException(TaskNotFoundException::class);
 
-        $service->updateTask(100, ['title' => 'test']);
+        $service->updateTask(100, 5, ['title' => 'test']);
+    }
+
+    public function testDeleteTaskThrowsWhenNoTaskIsFoundForTheUser(): void
+    {
+        $repository = $this->createMock(TaskRepository::class);
+        $service = new TaskService($repository);
+
+        $repository->method('delete')->willReturn(false);
+
+        $repository->expects($this->once())
+            ->method('delete')
+            ->with(5, 999);
+
+        $this->expectException(TaskNotFoundException::class);
+
+        $service->deleteTask(5, 999);
+    }
+
+    public function testDeleteTaskDeletesTheTaskFoundForTheUser(): void
+    {
+        $repository = $this->createMock(TaskRepository::class);
+        $service = new TaskService($repository);
+
+        $repository->method('delete')->willReturn(true);
+
+        $repository->expects($this->once())
+            ->method('delete')
+            ->with(5, 7);
+
+        $service->deleteTask(5, 7);
+    }
+
+    public function testListTasksReturnsTheTasksFoundForTheUser(): void
+    {
+        $repository = $this->createMock(TaskRepository::class);
+        $service = new TaskService($repository);
+
+        $data = [
+            [
+                'id' => 5,
+                'title' => 'Test',
+                'description' => 'Test description'
+            ],
+            [
+                'id' => 6,
+                'title' => 'Test 1',
+                'description' => 'Test description 1'
+            ]
+        ];
+
+        $repository->method('findAll')->willReturn($data);
+
+        $repository->expects($this->once())
+            ->method('findAll')
+            ->with(7);
+
+        $returned_data = $service->listTasks(7);
+
+        $this->assertSame($data, $returned_data);
     }
 }
