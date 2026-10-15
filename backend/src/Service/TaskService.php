@@ -29,21 +29,27 @@ class TaskService
         return $this->taskRepository->create($user_id, $data);
     }
 
-    public function listTasks(): array
+    public function listTasks(int $user_id): array
     {
-        return $this->taskRepository->findAll();
+        return $this->taskRepository->findAll($user_id);
     }
 
-    public function getTask(int $id): ?array
+    public function getTask(int $task_id, int $user_id): array
     {
-        return $this->taskRepository->findById($id);
+        $task = $this->taskRepository->findById($task_id, $user_id);
+
+        if ($task === null) {
+            throw new TaskNotFoundException("The task with id $task_id does not exist");
+        }
+
+        return $task;
     }
 
-    public function updateTask(int $id, array $data): bool
+    public function updateTask(int $task_id, int $user_id, array $data): void
     {
 
-        if ($this->taskRepository->findById($id) === null) {
-            throw new TaskNotFoundException("The task with id $id does not exist");
+        if ($this->taskRepository->findById($task_id, $user_id) === null) {
+            throw new TaskNotFoundException("The task with id $task_id does not exist");
         }
 
         $start_date = $this->validateDate($data['start_date'] ?? null);
@@ -54,12 +60,14 @@ class TaskService
 
         $this->assertHasTitle($data);
 
-        return $this->taskRepository->update($id, $data);
+        $this->taskRepository->update($task_id, $user_id,  $data);
     }
 
-    public function deleteTask(int $id): bool
+    public function deleteTask(int $task_id, int $user_id): void
     {
-        return $this->taskRepository->delete($id);
+        if ($this->taskRepository->delete($task_id, $user_id) === false) {
+            throw new TaskNotFoundException("The task with id $task_id does not exist");
+        }
     }
 
     private function assertHasTitle(array $data): void

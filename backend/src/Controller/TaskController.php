@@ -35,34 +35,37 @@ class TaskController
 
     public function list(): void
     {
-        $tasks = $this->taskService->listTasks();
+        $user_id = $_SESSION['user_id'];
+        $tasks = $this->taskService->listTasks($user_id);
         http_response_code(200);
         header('Content-Type: application/json');
         echo json_encode($tasks);
     }
 
-    public function show(int $id): void
+    public function show(int $task_id): void
     {
-        $task = $this->taskService->getTask($id);
-
-        if ($task !== null) {
+        $user_id = $_SESSION['user_id'];
+        
+        try {
+            $task = $this->taskService->getTask($task_id, $user_id);
             http_response_code(200);
             header('Content-Type: application/json');
             echo json_encode($task);
-        } else {
+        } catch (TaskNotFoundException $e) {
             http_response_code(404);
             header('Content-Type: application/json');
-            echo json_encode(['error' => 'The task with id ' . $id . ' does not exist']);
+            echo json_encode(['error' => 'The task with id ' . $task_id . ' does not exist']);
         }
     }
 
-    public function update(int $id): void
+    public function update(int $task_id): void
     {
         $json = file_get_contents('php://input');
         $data = json_decode($json, true);
+        $user_id = $_SESSION['user_id'];
 
         try {
-            $this->taskService->updateTask($id, $data);            
+            $this->taskService->updateTask($task_id, $user_id, $data);            
             http_response_code(204);
         } catch (TaskNotFoundException $e) {
             http_response_code(404);
@@ -75,16 +78,17 @@ class TaskController
         }
     }
 
-    public function delete(int $id): void
+    public function delete(int $task_id): void
     {
-        $isTaskDeleted = $this->taskService->deleteTask($id);
-
-        if ($isTaskDeleted) {
+        $user_id = $_SESSION['user_id'];
+        
+        try {
+            $this->taskService->deleteTask($task_id, $user_id);
             http_response_code(204);
-        } else {
+        } catch (TaskNotFoundException $e) {
             http_response_code(404);
             header('Content-Type: application/json');
-            echo json_encode(['error' => "The task with id $id does not exist"]);
+            echo json_encode(['error' => "The task with id $task_id does not exist"]);
         }
     }
 }
