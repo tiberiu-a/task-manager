@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { request } from '@/services/api'
 import TaskItem from '@/components/TaskItem.vue'
+import { useRouter } from 'vue-router'
 
 const tasks = ref([])
 const loading = ref(true)
@@ -10,8 +11,7 @@ const loadError = ref(null)
 const actionError = ref(null)
 const title = ref("")
 const description = ref("")
-
-const temp_creator_id = 5
+const router = useRouter()
 
 onMounted(async () => {
     await loadTasks()
@@ -23,6 +23,7 @@ async function loadTasks() {
         loading.value = tasks.value.length === 0        
         tasks.value = await request("/tasks")
     } catch (e) {
+        if (handleRequestError(e.status)) return
         loadError.value = "An error occurred while retrieving the tasks!"
         console.error('Error fetching tasks: ', e)
     } finally {
@@ -39,13 +40,13 @@ async function createTask() {
             body: {
                 title: title.value,
                 description: description.value,
-                creator_id: temp_creator_id
             }
         })
         title.value = ""
         description.value = ""
         loadTasks()
     } catch (e) {
+        if (handleRequestError(e.status)) return
         actionError.value = "An error occurred while creating a task!"
         console.error('Error creating task: ', e)
     } finally {
@@ -63,6 +64,7 @@ async function deleteTask(id) {
         })        
         tasks.value = tasks.value.filter(task => task.id !== id)
     } catch (e) {
+        if (handleRequestError(e.status)) return
         actionError.value = "An error occurred while deleting a task!"
         console.error('Error deleting task: ', e)
     } finally {
@@ -84,11 +86,20 @@ async function updateTask(data) {
         })        
         tasks.value = tasks.value.map(t => t.id === data.id ? { ...t, title: data.title, description: data.description } : t)
     } catch (e) {
+        if (handleRequestError(e.status)) return
         actionError.value = "An error occurred while updating a task!"
         console.error('Error updating task: ', e)
     } finally {
         pending.value = false
     }
+}
+
+function handleRequestError(status) {
+    if (status == 401) {
+        router.replace('/login')
+        return true
+    }
+    return false
 }
 </script>
 
@@ -142,12 +153,5 @@ async function updateTask(data) {
 
 .state {
     color: var(--text-muted)
-}
-
-.error {
-    color: var(--danger);
-    background-color: var(--danger-bg);
-    padding: 8px 12px;
-    border-radius: 4px;
 }
 </style>

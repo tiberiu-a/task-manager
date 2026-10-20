@@ -1,5 +1,12 @@
 const api = 'http://localhost:8000'
 
+class HTTPError extends Error {
+  constructor(status, message) {
+    super(message)
+    this.status = status
+  }
+}
+
 export async function request(path, options = {}) {
   if (options.body !== undefined) {
     options = {
@@ -8,11 +15,15 @@ export async function request(path, options = {}) {
       body: JSON.stringify(options.body),
     }
   }
+  options = {
+    ...options,
+    credentials: 'include',
+  }
 
   const response = await fetch(api + path, options)
 
   if (!response.ok) {
-    throw new Error(`HTTP error! Status: ${response.status}`)
+    throw new HTTPError(response.status, `HTTP error! Status: ${response.status}`)
   }
 
   if (response.status === 204) {
