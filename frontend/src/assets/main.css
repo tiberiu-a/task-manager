@@ -25,6 +25,10 @@
   --danger-bg: #ffebe6;
   --danger-bg-hover: #ffebe6;
   --danger-bg-active: #ffbdad;
+
+  /* disabled */
+  --disabled-bg: #ebecf0;
+  --disabled-text: #a5adba;
 }
 
 body {
@@ -103,6 +107,12 @@ h1 {
   background-color: var(--accent-active);
 }
 
+.primary:disabled {
+  background-color: var(--disabled-bg);
+  color: var(--disabled-text);
+  cursor: not-allowed;
+}
+
 .secondary {
   background-color: var(--secondary);
   color: var(--text);
@@ -132,4 +142,11 @@ h1 {
   border-radius: 8px;
   padding: 16px;
   box-shadow: 0 1px 3px rgba(9, 30, 66, 0.12);
+}
+
+.error {
+  color: var(--danger);
+  background-color: var(--danger-bg);
+  padding: 8px 12px;
+  border-radius: 4px;
 }
