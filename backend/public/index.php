@@ -9,12 +9,22 @@ use App\Repository\UserRepository;
 use App\Service\TaskService;
 use App\Service\UserService;
 
+// Do not accept sessions that do not originate from the server
+ini_set('session.use_strict_mode', 1);
+// "Secure" will be set to "true" when we deploy it to the server
+session_set_cookie_params([
+    'httponly' => true,
+    'path' => "/",
+    'lifetime' => 0,
+    'secure' => false,
+    'samesite' => 'Lax'
+]);
+
 header('Access-Control-Allow-Origin: http://localhost:5173');
 header('Access-Control-Allow-Credentials: true');
 header('Access-Control-Allow-Methods: POST, GET, PUT, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 header('Access-Control-Max-Age: 7200');
-
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
@@ -34,11 +44,13 @@ $userRepository = new UserRepository($pdo);
 $userService = new UserService($userRepository);
 $userController = new UserController($userService);
 
+
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_SERVER['REQUEST_URI'] === '/register') {
 
     $userController->create();
     exit();
-    
+
 } elseif ($_SERVER['REQUEST_METHOD'] === 'POST' && $_SERVER['REQUEST_URI'] === '/login') {
 
     $userController->login();
