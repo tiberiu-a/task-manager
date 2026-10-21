@@ -126,6 +126,12 @@ h1 {
   background-color: var(--secondary-active);
 }
 
+.secondary:disabled {
+  background-color: var(--disabled-bg);
+  color: var(--disabled-text);
+  cursor: not-allowed;
+}
+
 .danger {
   background-color: transparent;
   color: var(--danger);
