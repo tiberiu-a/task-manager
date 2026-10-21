@@ -19,7 +19,7 @@ class UserController
     public function create(): void
     {
         $json = file_get_contents('php://input');
-        $data = json_decode($json, true);        
+        $data = json_decode($json, true);
 
         try {
             $id = $this->userService->createUser($data);
@@ -56,6 +56,36 @@ class UserController
             http_response_code(401);
             header('Content-Type: application/json');
             echo json_encode(['error' => $e->getMessage()]);
+        }
+    }
+
+    public function logout(): void
+    {
+        $_SESSION = array();
+
+        /* 
+        The destruction of browser cookie before server sessions is intentional so that
+        even if the server fails to destroy the session, the browser is logged out.
+        */
+        if (ini_get('session.use_cookies')) {
+            $params = session_get_cookie_params();
+            setcookie(
+                session_name(),
+                '',
+                time() - 42000,
+                $params["path"],
+                $params["domain"],
+                $params["secure"],
+                $params["httponly"]
+            );
+        }
+
+        if (session_destroy()) {
+            http_response_code(204);
+        } else {
+            http_response_code(500);
+            header('Content-Type: application/json');
+            echo json_encode(['error' => 'You were unable to logout!']);
         }
     }
 }

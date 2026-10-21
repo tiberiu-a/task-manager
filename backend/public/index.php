@@ -20,7 +20,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
     http_response_code(204);
     exit();
-
 }
 
 $db = new Database();
@@ -39,19 +38,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_SERVER['REQUEST_URI'] === '/regis
 
     $userController->create();
     exit();
-
+    
 } elseif ($_SERVER['REQUEST_METHOD'] === 'POST' && $_SERVER['REQUEST_URI'] === '/login') {
 
     $userController->login();
     exit();
+
 }
 
 session_start();
 
 if (array_key_exists('user_id', $_SESSION) === false) {
+
     http_response_code(401);
     header('Content-Type: application/json');
     echo json_encode(['error' => 'You are not logged in']);
+    exit();
+
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_SERVER['REQUEST_URI'] === '/logout') {
+
+    $userController->logout();
     exit();
 }
 
@@ -64,7 +72,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_SERVER['REQUEST_URI'] === '/tasks
     $taskController->list();
 
 } elseif ($_SERVER['REQUEST_METHOD'] === 'GET' && preg_match('#^/tasks/(\d+)$#', $_SERVER['REQUEST_URI'], $matches)) {
-       
+
     $id = (int) $matches[1];
     $taskController->show($id);
 
