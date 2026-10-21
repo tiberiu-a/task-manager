@@ -94,6 +94,23 @@ async function updateTask(data) {
     }
 }
 
+async function logout() {
+    try {
+        actionError.value = null
+        pending.value = true
+        await request('/logout', {
+            method: "POST"
+        })
+        router.replace('/login')
+    } catch (e) {
+        if (handleRequestError(e.status)) return
+        actionError.value = "An error occurred during logout!"
+        console.error('Error logout: ', e)
+    } finally {
+        pending.value = false
+    }
+}
+
 function handleRequestError(status) {
     if (status == 401) {
         router.replace('/login')
@@ -105,7 +122,10 @@ function handleRequestError(status) {
 
 <template>
     <div class="root-tasks">
-        <h1>My tasks</h1>
+        <div class="title-bar">
+            <h1>My tasks</h1>
+            <button @click="logout" class="secondary" :disabled="pending">Logout</button>
+        </div>
         <p v-if="actionError" class="error">{{ actionError }}</p>
         <p v-if="pending" class="state">Pending...</p>
         <p v-if="loading" class="state">Is Loading...</p>
@@ -137,6 +157,13 @@ function handleRequestError(status) {
     gap: 16px;
     max-width: 720px;
     margin: 0 auto;
+}
+
+.title-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px;
 }
 
 .task-list {
