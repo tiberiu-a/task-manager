@@ -33,6 +33,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
+function exception_handler(Throwable $throwable): void
+{
+    error_log((string) $throwable);
+    http_response_code(500);
+    header('Content-Type: application/json');
+    echo json_encode(['error' => 'Server error']);
+}
+
+set_exception_handler('exception_handler');
+
 $db = new Database();
 $pdo = $db->getConnection();
 $matches = array();
