@@ -4,25 +4,28 @@ namespace App\Controller;
 
 use App\Exception\EmailAlreadyExistsException;
 use App\Exception\InvalidCredentialsException;
+use App\Http\JsonBodyReader;
 use App\Service\UserService;
 use InvalidArgumentException;
 
 class UserController
 {
-    private UserService $userService;
+    private UserService $user_service;
+    private JsonBodyReader $json_body_reader;
 
-    public function __construct(UserService $userService)
+    public function __construct(UserService $user_service, JsonBodyReader $json_body_reader)
     {
-        $this->userService = $userService;
+        $this->user_service = $user_service;
+        $this->json_body_reader = $json_body_reader;
     }
 
     public function create(): void
     {
         $json = file_get_contents('php://input');
-        $data = json_decode($json, true);
 
         try {
-            $id = $this->userService->createUser($data);
+            $data = $this->json_body_reader->decodeJson($json);
+            $id = $this->user_service->createUser($data);
             http_response_code(201);
             header('Content-Type: application/json');
             echo json_encode(['id' => $id]);
@@ -40,10 +43,10 @@ class UserController
     public function login(): void
     {
         $json = file_get_contents('php://input');
-        $data = json_decode($json, true);
-
+        
         try {
-            $id = $this->userService->loginUser($data);
+            $data = $this->json_body_reader->decodeJson($json);
+            $id = $this->user_service->loginUser($data);
             session_start();
             session_regenerate_id(true);
             $_SESSION['user_id'] = $id;

@@ -4,6 +4,7 @@ require __DIR__ . '/../vendor/autoload.php';
 use App\Database;
 use App\Controller\TaskController;
 use App\Controller\UserController;
+use App\Http\JsonBodyReader;
 use App\Repository\TaskRepository;
 use App\Repository\UserRepository;
 use App\Service\TaskService;
@@ -35,14 +36,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 $db = new Database();
 $pdo = $db->getConnection();
 $matches = array();
+$json_body_reader = new JsonBodyReader();
 
 $taskRepository = new TaskRepository($pdo);
 $taskService = new TaskService($taskRepository);
-$taskController = new TaskController($taskService);
+$taskController = new TaskController($taskService, $json_body_reader);
 
 $userRepository = new UserRepository($pdo);
 $userService = new UserService($userRepository);
-$userController = new UserController($userService);
+$userController = new UserController($userService, $json_body_reader);
 
 
 
