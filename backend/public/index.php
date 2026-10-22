@@ -21,7 +21,14 @@ session_set_cookie_params([
     'samesite' => 'Lax'
 ]);
 
-header('Access-Control-Allow-Origin: http://localhost:5173');
+$front_url = getenv('FRONT_URL');
+
+if (!empty($front_url)) {
+    header("Access-Control-Allow-Origin: {$front_url}");
+} else {
+    error_log('FRONT_URL is missing from the .env file or the value is an empty string');
+}
+
 header('Access-Control-Allow-Credentials: true');
 header('Access-Control-Allow-Methods: POST, GET, PUT, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
