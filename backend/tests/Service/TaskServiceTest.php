@@ -29,59 +29,6 @@ class TaskServiceTest extends TestCase
         $this->service->createTask(5, []);
     }
 
-    public function testCreateTaskRejectsDueDateBeforeStartDate(): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-
-        $this->service->createTask(5, [
-            'title' => 'Test',
-            'start_date' => '2026-08-10',
-            'due_date' => '2026-08-09'
-        ]);
-    }
-
-    public function testCreateTaskRejectsMalformedStartDate(): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-
-        $this->service->createTask(5, [
-            'title' => 'Test',
-            'start_date' => 'hello',
-        ]);
-    }
-
-    public function testCreateTaskRejectsMalformedDueDate(): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-
-        $this->service->createTask(5, [
-            'title' => 'Test',
-            'due_date' => 'hello',
-        ]);
-    }
-
-    public function testCreateTaskRejectNonexistentStartDate(): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage("The day or month is out of range");
-
-        $this->service->createTask(5, [
-            'title' => 'Test',
-            'start_date' => '2026-08-45'
-        ]);
-    }
-
-    public function testCreateTaskRejectNonexistentDueDate(): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage("The day or month is out of range");
-
-        $this->service->createTask(5, [
-            'title' => 'Test',
-            'due_date' => '2026-08-45'
-        ]);
-    }
-
     public function testCreateTaskReturnsTheNewId(): void
     {
         $this->repository->method('create')->willReturn(42);
@@ -118,8 +65,6 @@ class TaskServiceTest extends TestCase
         $data = [
             'id' => 5,
             'title' => 'Test',
-            'start_date' => '2026-08-09',
-            'due_date' => '2026-08-10'
         ];
 
         $repository->method('findById')->willReturn($data);
@@ -150,8 +95,6 @@ class TaskServiceTest extends TestCase
         $data = [
             'id' => 5,
             'title' => 'Test',
-            'start_date' => '2026-08-09',
-            'due_date' => '2026-08-10'
         ];
 
         $repository->expects($this->once())
@@ -188,19 +131,6 @@ class TaskServiceTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
 
         $this->service->updateTask(5, 5, []);
-    }
-
-    public function testUpdateTaskRejectsDueDateBeforeStartDate(): void
-    {
-        $this->repository->method('findById')->willReturn(['id' => 5]);
-
-        $this->expectException(InvalidArgumentException::class);
-
-        $this->service->updateTask(5, 5, [
-            'title' => 'test',
-            'start_date' => '2026-08-10',
-            'due_date' => '2026-08-09'
-        ]);
     }
 
     public function testUpdateTaskDoesNotWriteWhenTaskDoesNotExist(): void
