@@ -17,7 +17,7 @@ class TaskService
 
     public function createTask(int $user_id, array $data): int
     {
-        $this->assertHasTitle($data);
+        $this->assertHasAValidTitle($data);
 
         return $this->taskRepository->create($user_id, $data);
     }
@@ -45,7 +45,7 @@ class TaskService
             throw new TaskNotFoundException("The task with id $task_id does not exist");
         }
 
-        $this->assertHasTitle($data);
+        $this->assertHasAValidTitle($data);
 
         $this->taskRepository->update($task_id, $user_id,  $data);
     }
@@ -57,10 +57,25 @@ class TaskService
         }
     }
 
-    private function assertHasTitle(array $data): void
+    private function assertHasAValidTitle(array $data): void
     {
-        if (empty($data['title'])) {
+        if (!isset($data['title'])) {
             throw new InvalidArgumentException("You can't have a task with an empty title");
+        }
+
+        if (gettype($data['title']) !== 'string')  {
+            throw new InvalidArgumentException("Task title is of the wrong type");
+        }
+
+        if (trim($data['title']) === "") {
+            throw new InvalidArgumentException("You can't have a task with an empty title");
+        }
+
+        // The limit is based on the maximum value in the database that a VARCHAR can hold
+        $max_char_title = 255;
+
+        if (mb_strlen($data['title']) > $max_char_title) {
+            throw new InvalidArgumentException("The task title can't be more than {$max_char_title} characters long");
         }
     }    
 }

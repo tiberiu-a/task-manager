@@ -25,8 +25,54 @@ class TaskServiceTest extends TestCase
     public function testCreateTaskRejectsEmptyTitle(): void
     {
         $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage("You can't have a task with an empty title");
 
         $this->service->createTask(5, []);
+    }
+
+    public function testCreateTaskRejectsEmptyStringTitle(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage("You can't have a task with an empty title");
+
+        $this->service->createTask(5, ['title' => '']);
+    }
+
+    public function testCreateTaskRejectsStringWithJustSpacesTitle(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage("You can't have a task with an empty title");
+
+        $this->service->createTask(5, ['title' => '         ']);
+    }
+
+    public function testCreateTaskRejectsAnyTypeOtherThanStringTitle(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage("Task title is of the wrong type");
+
+        $this->service->createTask(5, ['title' => []]);
+    }
+
+    public function testCreateTaskRejectsTitleThatExceedsMaxChar(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage("The task title can't be more than 255 characters long");
+
+        $title_string = str_repeat('ș', 256);
+
+        $this->service->createTask(5, ['title' => $title_string]);
+    }
+
+    public function testCreateTaskAcceptsMaxCharTitle(): void
+    {
+        $this->repository->method('create')->willReturn(42);
+
+        $title_string = str_repeat('ș', 255);
+
+        $result = $this->service->createTask(5, ['title' => $title_string]);
+
+        $this->assertSame(42, $result);
     }
 
     public function testCreateTaskReturnsTheNewId(): void
